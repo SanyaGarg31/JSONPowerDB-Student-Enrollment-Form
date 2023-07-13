@@ -1,8 +1,12 @@
 # JSONPowerDB-Student-Enrollment-Form
 This repository is in lieu with the micro course 'JSONPowerDB' of Login2EXplore
+
 Name: Sanya Garg
+
 Education: BTech, Computer Science and Engineering
+
 Email: sanya.garg318@gmail.com
+
 Objective: Micro Project Work
 
 Title of the Project : Student Enrollment Form
