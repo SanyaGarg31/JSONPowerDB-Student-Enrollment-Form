@@ -1,3 +1,50 @@
+## 📂 Categories
+
+### 📚 Standards and Frameworks
+{expand:title=View Standards and Frameworks}
+- [ISO Standards Overview](#)
+- [Framework Guidelines](#)
+- [Compliance Checklist](#)
+{expand}
+
+---
+
+### 📝 Procedures
+{expand:title=View Procedures}
+- [Step-by-Step Onboarding](#)
+- [Incident Handling Procedure](#)
+- [Approval Workflow](#)
+{expand}
+
+---
+
+### 🛠️ Design Diagrams
+{expand:title=View Design Diagrams}
+- [System Architecture](#)
+- [Database Schema](#)
+- [Component Diagrams](#)
+{expand}
+
+---
+
+### 🔄 Logical Flows
+{expand:title=View Logical Flows}
+- [Authentication Flow](#)
+- [Data Processing Flow](#)
+- [Error Handling Flow](#)
+{expand}
+
+---
+
+### 🎨 UI/UX Flows
+{expand:title=View UI/UX Flows}
+- [User Login Flow](#)
+- [Checkout Process](#)
+- [Interactive Prototypes](#)
+{expand}
+
+
+
 # JSONPowerDB-Student-Enrollment-Form
 This repository is in lieu with the micro course 'JSONPowerDB' of Login2EXplore
 
