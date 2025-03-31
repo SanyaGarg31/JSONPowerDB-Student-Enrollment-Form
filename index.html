@@ -1,36 +1,17 @@
-public static JSONObject getSharedSecretJson() {
-    return new JSONObject()
-        .put("secret", new JSONObject()
-            .put("value", "xyzss")
-        );
-}
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-public static JSONObject getVirtualHostsJson() {
+public static JSONObject getVirtualHostsJson(List<String> hostNames) {
     JSONArray itemsArray = new JSONArray();
 
-    // First Virtual Host Entry
-    JSONObject host1 = new JSONObject()
-        .put("host", "a1234sanyareqit")
-        .put("port", 80)
-        .put("agentResourceCacheTTL", 300);
+    for (String host : hostNames) {
+        JSONObject hostEntry = new JSONObject()
+            .put("host", host)
+            .put("port", 80)  // Default Port
+            .put("agentResourceCacheTTL", 300); // Default TTL
 
-    // Second Virtual Host Entry
-    JSONObject host2 = new JSONObject()
-        .put("host", "a1234sanyareqit1")
-        .put("port", 80)
-        .put("agentResourceCacheTTL", 300);
+        itemsArray.put(hostEntry);
+    }
 
-    // Adding both hosts to the array
-    itemsArray.put(host1);
-    itemsArray.put(host2);
-
-    // Creating the final JSON object
     return new JSONObject().put("items", itemsArray);
 }
-
 
 
 
