@@ -1,25 +1,20 @@
 ## 📂 Categories
 
-public static JSONObject getGroovyRuleJson(String appName) {
+public static JSONObject getAuthReqJson(String appName, String authnReqListId) {
     return new JSONObject()
-        .put("className", "com.pingidentity.pa.policy.GroovyPolicyInterceptor")
-        .put("name", "A1234" + appName + "Reqit: groovy") // Dynamic app name
+        .put("className", "com.pingidentity.pa.policy.authnreq.AuthenticationRequirementsPolicyInterceptor")
+        .put("name", "A1234" + appName + "Reqit: authnreq") // Dynamic app name
         .put("supportedDestinations", new JSONArray()
             .put("Site")
             .put("Agent")
         )
         .put("configuration", new JSONObject()
-            .put("rejectionHandlingEnabled", false)
-            .put("rejectionHandler", JSONObject.NULL) // Correct JSON null representation
-            .put("errorResponseCode", 403)
-            .put("errorResponseStatusMsg", "Forbidden")
-            .put("errorResponseTemplateFile", "policy.error.page.template.html")
-            .put("errorResponseContentType", "text/html;charset=UTF-8")
-            .put("groovyScript", 
-                "def useragent=exc?.request?.header?.getFirstValue(\"User-Agent\");\\ndef ua=useragent;"
-            )
+            .put("authenticationRequirementsList", authnReqListId) // Dynamic authnReqListId
+            .put("minimumAuthenticationRequirement", "AAL1")
+            .put("maxAge", -1)
         );
 }
+
 
 
 
