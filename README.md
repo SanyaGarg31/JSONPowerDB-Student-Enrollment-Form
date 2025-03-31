@@ -1,23 +1,5 @@
 ## 📂 Categories
 
-public static JSONObject getAuthReqJson(String appName, String authnReqListId) {
-    return new JSONObject()
-        .put("className", "com.pingidentity.pa.policy.authnreq.AuthenticationRequirementsPolicyInterceptor")
-        .put("name", "A1234" + appName + "Reqit: authnreq") // Dynamic app name
-        .put("supportedDestinations", new JSONArray()
-            .put("Site")
-            .put("Agent")
-        )
-        .put("configuration", new JSONObject()
-            .put("authenticationRequirementsList", authnReqListId) // Dynamic authnReqListId
-            .put("minimumAuthenticationRequirement", "AAL1")
-            .put("maxAge", -1)
-        );
-}
-
-
-
-
 
 
 
