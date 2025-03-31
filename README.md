@@ -1,53 +1,24 @@
 ## 📂 Categories
-private static String createObject(String endpoint, JSONObject requestBody) throws Exception {
-        HttpRequest request = HttpRequest.newBuilder()
-            .uri(new URI(PING_ACCESS_BASE_URL + "/" + endpoint))
-            .header("Authorization", AUTH_HEADER)
-            .header("Content-Type", "application/json")
-            .POST(HttpRequest.BodyPublishers.ofString(requestBody.toString()))
-            .build();
-        
-        HttpResponse<String> response = httpClient.send(request, BodyHandlers.ofString());
-        
-        if (response.statusCode() != 201) {
-            throw new Exception("Failed to create " + endpoint + ": " + response.body());
-        }
-        
-        JSONObject responseBody = new JSONObject(response.body());
-        String id = responseBody.getString("id");
-        createdObjectIds.add(endpoint + "/" + id);
-        return id;
-    }
-    
-    private static void rollbackCreatedObjects() {
-        for (int i = createdObjectIds.size() - 1; i >= 0; i--) {
-            String endpointWithId = createdObjectIds.get(i);
-            try {
-                HttpRequest deleteRequest = HttpRequest.newBuilder()
-                    .uri(new URI(PING_ACCESS_BASE_URL + "/" + endpointWithId))
-                    .header("Authorization", AUTH_HEADER)
-                    .DELETE()
-                    .build();
-                httpClient.send(deleteRequest, BodyHandlers.ofString());
-            } catch (Exception e) {
-                System.err.println("Rollback failed for " + endpointWithId + ": " + e.getMessage());
-            }
-        }
-    }
-    
-    // JSON generation methods (placeholders, replace with real JSON)
-    private static JSONObject getAuthnReqListJson() { return new JSONObject(); }
-    private static JSONObject getAuthReqJson(String authnReqListId) { return new JSONObject(); }
-    private static JSONObject getGroovyRuleJson() { return new JSONObject(); }
-    private static JSONObject getOIDCPolicyJson() { return new JSONObject(); }
-    private static JSONObject getOIDCConfigJson(String oidcPolicyId) { return new JSONObject(); }
-    private static JSONObject getWebIdentityMappingJson() { return new JSONObject(); }
-    private static JSONObject getWebSessionJson() { return new JSONObject(); }
-    private static JSONObject getVirtualHostJson(List<String> virtualHosts) { return new JSONObject(); }
-    private static JSONObject getSharedSecretJson() { return new JSONObject(); }
-    private static JSONObject getAgentJson() { return new JSONObject(); }
-    private static JSONObject getApplicationJson(String appName, String contextRoot, String virtualHostId) { return new JSONObject(); }
-    private static JSONObject getResourceJson(String appId) { return new JSONObject(); }
+
+public static JSONObject getGroovyRuleJson(String appName) {
+    return new JSONObject()
+        .put("className", "com.pingidentity.pa.policy.GroovyPolicyInterceptor")
+        .put("name", "A1234" + appName + "Reqit: groovy") // Dynamic app name
+        .put("supportedDestinations", new JSONArray()
+            .put("Site")
+            .put("Agent")
+        )
+        .put("configuration", new JSONObject()
+            .put("rejectionHandlingEnabled", false)
+            .put("rejectionHandler", JSONObject.NULL) // Correct JSON null representation
+            .put("errorResponseCode", 403)
+            .put("errorResponseStatusMsg", "Forbidden")
+            .put("errorResponseTemplateFile", "policy.error.page.template.html")
+            .put("errorResponseContentType", "text/html;charset=UTF-8")
+            .put("groovyScript", 
+                "def useragent=exc?.request?.header?.getFirstValue(\"User-Agent\");\\ndef ua=useragent;"
+            )
+        );
 }
 
 
