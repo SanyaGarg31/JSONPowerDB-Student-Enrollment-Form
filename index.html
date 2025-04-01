@@ -1,18 +1,46 @@
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import org.json.JSONObject;
-
-public class JsonUtils {
-    public static JSONObject loadJsonFromFile(String fileName) {
-        try {
-            String content = new String(Files.readAllBytes(Paths.get("json/" + fileName)));
-            return new JSONObject(content);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to load JSON file: " + fileName, e);
+private static String createObject(String endpoint, JSONObject requestBody) throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(new URI(PING_ACCESS_BASE_URL + "/" + endpoint))
+            .header("Authorization", AUTH_HEADER)
+            .header("Content-Type", "application/json")
+            .POST(HttpRequest.BodyPublishers.ofString(requestBody.toString()))
+            .build();
+        
+        HttpResponse<String> response = httpClient.send(request, BodyHandlers.ofString());
+        
+        if (response.statusCode() != 201) {
+            throw new Exception("Failed to create " + endpoint + ": " + response.body());
+        }
+        
+        JSONObject responseBody = new JSONObject(response.body());
+        String id = responseBody.getString("id");
+        createdObjectIds.add(endpoint + "/" + id);
+        return id;
+    }
+    
+    private static void rollbackCreatedObjects() {
+        for (int i = createdObjectIds.size() - 1; i >= 0; i--) {
+            String endpointWithId = createdObjectIds.get(i);
+            try {
+                HttpRequest deleteRequest = HttpRequest.newBuilder()
+                    .uri(new URI(PING_ACCESS_BASE_URL + "/" + endpointWithId))
+                    .header("Authorization", AUTH_HEADER)
+                    .DELETE()
+                    .build();
+                httpClient.send(deleteRequest, BodyHandlers.ofString());
+            } catch (Exception e) {
+                System.err.println("Rollback failed for " + endpointWithId + ": " + e.getMessage());
+            }
         }
     }
-}
+    
+    private static JSONObject getApplicationJson(String appName, String contextRoot, String virtualHostId) {
+        JSONObject json = JsonUtils.loadJsonFromFile("applications.json");
+        json.put("name", appName);
+        json.put("contextRoot", contextRoot);
+        json.put("virtualHostIds", List.of(virtualHostId));  // Inject dynamic value
+        return json;
+    }
 
 
 
