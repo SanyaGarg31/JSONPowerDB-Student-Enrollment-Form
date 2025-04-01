@@ -1,26 +1,19 @@
-private static JSONObject getAgentJson() {
-        JSONObject certificateHash = new JSONObject()
-                .put("algorithm", "SHA1")
-                .put("hexValue", "327a06e3f4d18dc58e1e72317b8369c0bef61f88");
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import org.json.JSONObject;
 
-        JSONArray sharedSecretIds = new JSONArray().put(2929);
-        JSONArray failoverHosts = new JSONArray().put("sso-dev-wtx.bankofamerica.com:8444");
-
-        return new JSONObject()
-                .put("name", "A1234SanyaReqit")
-                .put("description", "ReqITAutomation")
-                .put("hostname", "sso-dev-rtx.bankofamerica.com")
-                .put("port", 8444)
-                .put("sharedSecretIds", sharedSecretIds)
-                .put("overrideIpSource", false)
-                .put("ipSource", JSONObject.NULL)
-                .put("failoverHosts", failoverHosts)
-                .put("failedRetryTimeout", 60)
-                .put("maxRetries", 3)
-                .put("unknownResourceMode", JSONObject.NULL)
-                .put("selectedCertificateId", 9)
-                .put("certificateHash", certificateHash);
+public class JsonUtils {
+    public static JSONObject loadJsonFromFile(String fileName) {
+        try {
+            String content = new String(Files.readAllBytes(Paths.get("json/" + fileName)));
+            return new JSONObject(content);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to load JSON file: " + fileName, e);
+        }
     }
+}
+
 
 
 
