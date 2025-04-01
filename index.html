@@ -1,4 +1,36 @@
-private static String createObject(String endpoint, JSONObject requestBody) throws Exception {
+public class PingAccessAppCreator {
+    private static final String PING_ACCESS_BASE_URL = "https://your-pingaccess-url.com/api/v3";
+    private static final String AUTH_HEADER = "Bearer your-access-token";
+    private static final HttpClient httpClient = HttpClient.newHttpClient();
+    private static final List<String> createdObjectIds = new ArrayList<>();
+    
+    public static void main(String[] args) {
+        String appName = "TestApp";
+        String contextRoot = "/test";
+        List<String> virtualHosts = List.of("https://example.com");
+        
+        try {
+            String authnReqListId = createObject("authnreqslist", JsonUtils.loadJsonFromFile("authnreqslist.json"));
+            String authReqId = createObject("authnreqs", JsonUtils.loadJsonFromFile("authnreqs.json"));
+            String groovyRuleId = createObject("rules", JsonUtils.loadJsonFromFile("rules.json"));
+            String oidcPolicyId = createObject("oidcpolicies", JsonUtils.loadJsonFromFile("oidcpolicies.json"));
+            String oidcConfigId = createObject("oidcconfigs", JsonUtils.loadJsonFromFile("oidcconfigs.json"));
+            String webIdMappingId = createObject("webidmappings", JsonUtils.loadJsonFromFile("webidmappings.json"));
+            String webSessionId = createObject("websessions", JsonUtils.loadJsonFromFile("websessions.json"));
+            String virtualHostId = createObject("virtualhosts", JsonUtils.loadJsonFromFile("virtualhosts.json"));
+            String sharedSecretId = createObject("sharedsecrets", JsonUtils.loadJsonFromFile("sharedsecrets.json"));
+            String agentId = createObject("agents", JsonUtils.loadJsonFromFile("agents.json"));
+            String appId = createObject("applications", getApplicationJson(appName, contextRoot, virtualHostId));
+            createObject("resources", JsonUtils.loadJsonFromFile("resources.json"));
+
+            System.out.println("PingAccess Application successfully created!");
+        } catch (Exception e) {
+            System.err.println("Error: " + e.getMessage());
+            rollbackCreatedObjects();
+        }
+    }
+    
+    private static String createObject(String endpoint, JSONObject requestBody) throws Exception {
         HttpRequest request = HttpRequest.newBuilder()
             .uri(new URI(PING_ACCESS_BASE_URL + "/" + endpoint))
             .header("Authorization", AUTH_HEADER)
@@ -41,6 +73,7 @@ private static String createObject(String endpoint, JSONObject requestBody) thro
         json.put("virtualHostIds", List.of(virtualHostId));  // Inject dynamic value
         return json;
     }
+}
 
 
 
