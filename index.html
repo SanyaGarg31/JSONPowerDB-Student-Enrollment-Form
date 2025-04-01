@@ -1,17 +1,26 @@
-public static JSONObject getVirtualHostsJson(List<String> hostNames) {
-    JSONArray itemsArray = new JSONArray();
+private static JSONObject getAgentJson() {
+        JSONObject certificateHash = new JSONObject()
+                .put("algorithm", "SHA1")
+                .put("hexValue", "327a06e3f4d18dc58e1e72317b8369c0bef61f88");
 
-    for (String host : hostNames) {
-        JSONObject hostEntry = new JSONObject()
-            .put("host", host)
-            .put("port", 80)  // Default Port
-            .put("agentResourceCacheTTL", 300); // Default TTL
+        JSONArray sharedSecretIds = new JSONArray().put(2929);
+        JSONArray failoverHosts = new JSONArray().put("sso-dev-wtx.bankofamerica.com:8444");
 
-        itemsArray.put(hostEntry);
+        return new JSONObject()
+                .put("name", "A1234SanyaReqit")
+                .put("description", "ReqITAutomation")
+                .put("hostname", "sso-dev-rtx.bankofamerica.com")
+                .put("port", 8444)
+                .put("sharedSecretIds", sharedSecretIds)
+                .put("overrideIpSource", false)
+                .put("ipSource", JSONObject.NULL)
+                .put("failoverHosts", failoverHosts)
+                .put("failedRetryTimeout", 60)
+                .put("maxRetries", 3)
+                .put("unknownResourceMode", JSONObject.NULL)
+                .put("selectedCertificateId", 9)
+                .put("certificateHash", certificateHash);
     }
-
-    return new JSONObject().put("items", itemsArray);
-}
 
 
 
