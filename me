@@ -1,0 +1,77 @@
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.*;
+import java.nio.file.*;
+import java.util.*;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+public class CreateAuthnReqLists {
+
+    private static final String BASE_URL = "https://your-pingaccess-hostname:9000/pa-admin-api/v3/";
+    private static final String AUTH_HEADER = "Bearer your-access-token";
+    private static final String POST_FILE_PATH = "postJsons/AuthnReqLists.json";
+
+    private static final ObjectMapper mapper = new ObjectMapper();
+    private static final HttpClient client = HttpClient.newHttpClient();
+    private static final Map<String, Integer> objectIds = new HashMap<>();
+
+    public static void main(String[] args) throws IOException, InterruptedException {
+
+        // Step 1: Read the POST JSON from file
+        String postJson = Files.readString(Paths.get(POST_FILE_PATH));
+
+        // Step 2: Send POST request to create AuthnReqLists
+        HttpRequest postRequest = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + "authnReqLists"))
+                .header("Authorization", AUTH_HEADER)
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(postJson))
+                .build();
+
+        HttpResponse<String> postResponse = client.send(postRequest, HttpResponse.BodyHandlers.ofString());
+
+        if (postResponse.statusCode() >= 400) {
+            System.err.println("❌ POST request failed: " + postResponse.body());
+            return;
+        }
+
+        // Get the "name" from POST JSON to match it later
+        JsonNode postBody = mapper.readTree(postJson);
+        String newObjectName = postBody.get("name").asText();
+
+        // Step 3: Send GET request to fetch all AuthnReqLists
+        HttpRequest getRequest = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + "authnReqLists"))
+                .header("Authorization", AUTH_HEADER)
+                .GET()
+                .build();
+
+        HttpResponse<String> getResponse = client.send(getRequest, HttpResponse.BodyHandlers.ofString());
+
+        if (getResponse.statusCode() >= 400) {
+            System.err.println("❌ GET request failed: " + getResponse.body());
+            return;
+        }
+
+        // Step 4: Parse GET response to find the ID of the newly created object
+        JsonNode root = mapper.readTree(getResponse.body());
+        JsonNode items = root.get("items");
+
+        int foundId = -1;
+        for (JsonNode item : items) {
+            if (item.get("name").asText().equals(newObjectName)) {
+                foundId = item.get("id").asInt();
+                objectIds.put("AuthnReqLists", foundId);
+                break;
+            }
+        }
+
+        if (foundId != -1) {
+            System.out.println("✅ AuthnReqLists created with ID: " + foundId);
+        } else {
+            System.err.println("❌ Could not find the created AuthnReqLists in GET response.");
+        }
+    }
+}
