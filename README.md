@@ -94,6 +94,11 @@ Examples of use : Use cases involve getting data of applicants to any firm or em
 Project status : Done
 
 Sources :Introduction to JsonPowerDB - V2.0
+![image](https://github.com/user-attachments/assets/52a54115-b5ae-4f57-a81f-d541d4277dc1)
+![image](https://github.com/user-attachments/assets/9aebb185-5ce6-49b1-a5cf-e98941a28e4d)
+![image](https://github.com/user-attachments/assets/4f70df29-15eb-40a4-ba48-8c4e5316fd3b)
+![image](https://github.com/user-attachments/assets/94ccec0c-424c-4842-a2f2-a77a1f56bd98)
+![image](https://github.com/user-attachments/assets/f609c1a8-5618-4931-ae0f-e1fbfdefad73)
 
 
 
