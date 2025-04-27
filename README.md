@@ -102,5 +102,125 @@ Sources :Introduction to JsonPowerDB - V2.0
 
 
 
+Step 1:
+Fetch rolling average data from the table considering a window of +5 and -5 days around the target date.
 
+Step 2:
+Retrieve the current day's record count from the database.
+
+Step 3:
+Set buffer limits based on the rolling average to define acceptable thresholds for record counts. These limits help in determining whether the data upload was successful or if there is a potential anomaly.
+
+Step 4:
+Perform an Anomaly Check by comparing the current day's count against the buffer limits.
+
+Step 5:
+Insert the calculated rolling average and buffer data into the Hive table for historical tracking and reference.
+
+Step 6:
+Generate an Anomaly Report summarizing deviations, highlighting affected tables, and calculating deviation percentages.
+
+Step 7:
+Trigger an Email Alert to the concerned team, notifying them immediately about the detected anomalies and attaching the report.
+
+Module 1: Buffer Calculation
+📏
+
+Objective:
+Establish a smart, adaptive range that defines "acceptable" data fluctuations for each table.
+
+Functionality:
+
+Fetch historical record counts for the previous 5 days and the next 5 days (if available).
+
+Calculate a rolling average of record counts.
+
+Define upper and lower buffer limits (example: ±10%) around this average.
+
+These buffer limits will act as the baseline for detecting any anomalies in current day's data ingestion.
+
+Outcome:
+A dynamic tolerance window that evolves with time, making the anomaly detection context-aware and reliable.
+
+Module 2: Internet Protocol (IP) Module
+🌐
+
+Objective:
+Connect securely to the target databases and pull real-time data counts.
+
+Functionality:
+
+Establish network connection with the Big Data system (Hive, HDFS, etc.).
+
+Retrieve the current day's record count based on the ingestion date (usually n-1).
+
+Handle exceptions like network failures, table unavailability, and data access issues.
+
+Outcome:
+Accurate retrieval of the live operational data for anomaly checking, ensuring connectivity is reliable and consistent.
+
+Module 3: Detect and Confirm Anomaly
+🚨
+
+Objective:
+Identify significant deviations from expected record counts and confirm anomalies with precision.
+
+Functionality:
+
+Compare today's actual record count with the calculated buffer range.
+
+Classify outcomes:
+
+Within range → No anomaly detected.
+
+Outside range → Potential anomaly detected.
+
+Categorize severity (Normal, Minor, Major, Critical) based on the percentage deviation.
+
+Outcome:
+Fast, automated detection of suspicious drops or spikes in data volume to proactively safeguard fraud detection systems.
+
+Module 4: Create an Anomaly Report
+📝
+
+Objective:
+Compile findings into a structured, visual format that can be easily reviewed and analyzed.
+
+Functionality:
+
+Create a tabular report listing:
+
+Date
+
+Table Name
+
+Actual Record Count
+
+Rolling Average
+
+Deviation Percentage
+
+Severity Level
+
+Include color-coding for quick visual analysis (green for normal, yellow for warning, red for breach).
+
+Outcome:
+A crisp, easy-to-understand report that summarizes the health of data ingestion processes at a glance.
+
+Module 5: Trigger Email with Anomaly Report
+📧
+
+Objective:
+Ensure that relevant stakeholders are alerted promptly to take corrective action.
+
+Functionality:
+
+Auto-generate an email notification if any anomaly is detected.
+
+Attach the generated anomaly report.
+
+Highlight critical anomalies directly in the email body for faster visibility.
+
+Outcome:
+Quick dissemination of important information, enabling timely investigation and resolution of data issues.
 
