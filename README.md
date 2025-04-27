@@ -1,6 +1,35 @@
-![image](https://github.com/user-attachments/assets/92582119-ae2c-4685-ad27-1f0d771edb35)
+1. Cross-functional Campus Grad Training on Cloud Domains
+Fresh campus graduates were trained across different cloud platforms, specifically focusing on technologies like Redis (an in-memory data store) and S3 Buckets (cloud storage).
 
-![image](https://github.com/user-attachments/assets/60000f43-966b-4b95-a875-7d7e109e9003)
+These sessions aimed at giving hands-on exposure to cloud database management, replication, and storage operations.
+
+2. Data Inconsistency Observed During Sandbox Labs
+While practicing in sandbox environments (isolated labs for experiments), issues were noticed where data retrieved was not consistent.
+
+Data differences appeared when accessed at different times or from different systems, leading to trust issues with data reliability.
+
+3. Root Cause Identified: Latency and Region-wise Replication
+After investigation, the key reasons were found to be:
+
+Latency: Delay in real-time syncing of data across regions.
+
+Region-wise Replication: Different data centers might not synchronize instantly, leading to users in different regions seeing different versions of data.
+
+Cloud services typically prioritize eventual consistency, which can cause these discrepancies temporarily.
+
+4. End-user Inconsistency Due to GTMs
+Global Traffic Managers (GTMs) direct users to the nearest or best-performing data center.
+
+Because of this, users from different regions might interact with different copies of the data, which are not fully synchronized yet.
+
+This led to end-users facing information mismatches, depending on where their requests were routed.
+
+5. Potential Financial Fraud Risks
+Delay in syncing transaction data across regions can create a vulnerability window.
+
+Threat actors could exploit these gaps through phishing or social engineering, taking advantage of the time lag in detection or verification.
+
+Fraud detection systems might miss real-time fraudulent activities if data isn't promptly available or analyzed at the bank’s backend systems.
 
 
 
