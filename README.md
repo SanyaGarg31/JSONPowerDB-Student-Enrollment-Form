@@ -1,37 +1,5 @@
-🏁 Conclusion
-The proposed solution successfully addresses the challenge of automating anomaly detection in data pipelines by implementing a dynamic, rolling average-based system.
-It ensures real-time monitoring, proactive alerting, and reliable data quality — all without manual intervention.
+![image](https://github.com/user-attachments/assets/60000f43-966b-4b95-a875-7d7e109e9003)
 
-By leveraging the power of the Hadoop ecosystem (HDFS, Hive, Spark) combined with Unix automation (Shell Scripting, Autosys), the system achieves:
-
-High scalability to handle large datasets.
-
-Flexibility to adapt to changing data patterns.
-
-Seamless integration with existing data workflows.
-
-The modular architecture ensures that maintenance, updates, and future enhancements can be done with minimal disruption, making it a robust, future-proof solution.
-
-✅ The system is efficient, scalable, and enterprise-ready for production deployments.
-
-🚀 Future Scope
-🔹 1. Multi-Metric Anomaly Detection:
-Currently based on counts — can be extended to multiple KPIs (e.g., sums, averages, custom business metrics).
-
-🔹 2. Machine Learning Integration:
-Implement ML-based models (Isolation Forests, Autoencoders) for even smarter anomaly detection beyond statistical averages.
-
-🔹 3. Real-time Streaming Anomaly Detection:
-Incorporate Apache Kafka and Spark Streaming to catch anomalies as soon as data is ingested, not just batch-wise.
-
-🔹 4. Dashboarding and Visualization:
-Integrate with Grafana, Tableau, or custom UI dashboards for live anomaly visualization instead of just email alerts.
-
-🔹 5. Self-healing Mechanisms:
-Enable auto-triggers that correct minor anomalies (e.g., re-trigger missing jobs) before escalation.
-
-🔹 6. Expand to Multiple Sources:
-Currently focused on a single table or flow — can be expanded across multiple tables, databases, or even cloud data lakes like AWS S3 or Azure Data Lake.
 
 
 ## 📂 Categories
