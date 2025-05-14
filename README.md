@@ -1,4 +1,75 @@
-![image](https://github.com/user-attachments/assets/6ef2d5cc-2953-4169-b4e0-6eeb4620ec0a)
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.file.Files;
+import java.util.List;
+
+public class PromoteToSIT {
+
+    private static final String SIT_BASE_URL = "https://sit-pingaccess.example.com/pa-admin-api/v3"; // Adjust
+    private static final String AUTH_TOKEN = "Bearer YOUR_SIT_API_TOKEN";
+
+    public static void main(String[] args) throws IOException {
+        File folder = new File("dev_exports");
+        File[] files = folder.listFiles((dir, name) -> name.endsWith(".json"));
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        if (files != null) {
+            for (File jsonFile : files) {
+                JsonNode jsonNode = mapper.readTree(jsonFile);
+
+                String endpoint = determineEndpointFromFilename(jsonFile.getName());  // E.g. "rules", "applications"
+                String postUrl = SIT_BASE_URL + "/" + endpoint;
+
+                boolean success = postToSIT(postUrl, jsonNode.toString());
+                System.out.println("POST to " + endpoint + " for file " + jsonFile.getName() + ": " + (success ? "Success" : "Failed"));
+            }
+        }
+    }
+
+    private static String determineEndpointFromFilename(String filename) {
+        if (filename.contains("rule")) return "rules";
+        if (filename.contains("application")) return "applications";
+        if (filename.contains("authn")) return "authnRequirements";
+        // Add other types as needed
+        return "unknown";
+    }
+
+    private static boolean postToSIT(String targetUrl, String jsonBody) {
+        try {
+            URL url = new URL(targetUrl);
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("POST");
+            con.setRequestProperty("Authorization", AUTH_TOKEN);
+            con.setRequestProperty("Content-Type", "application/json");
+            con.setDoOutput(true);
+
+            try (OutputStream os = con.getOutputStream()) {
+                os.write(jsonBody.getBytes());
+                os.flush();
+            }
+
+            int responseCode = con.getResponseCode();
+            if (responseCode == HttpURLConnection.HTTP_CREATED || responseCode == HttpURLConnection.HTTP_OK) {
+                return true;
+            } else {
+                System.err.println("Failed POST. Response Code: " + responseCode);
+                try (BufferedReader br = new BufferedReader(new InputStreamReader(con.getErrorStream()))) {
+                    br.lines().forEach(System.err::println);
+                }
+                return false;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+}
+
 
 
 
