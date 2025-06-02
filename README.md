@@ -1,72 +1,60 @@
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+// Step 1: Get all DEV resources
+HttpRequest GetDevResources = HttpRequest.newBuilder()
+    .uri(URI.create("https://<DEV_URL>/applications/" + DevApplicationId + "/resources"))
+    .header("Authorization", DEV_TOKEN)
+    .GET()
+    .build();
 
-import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.file.Files;
-import java.util.List;
+HttpResponse<String> DevResourcesResponse = client.send(GetDevResources, HttpResponse.BodyHandlers.ofString());
+JsonNode DevItems = mapper.readTree(DevResourcesResponse.body()).get("items");
 
-public class PromoteToSIT {
+// Step 2: Get all SIT resources
+HttpRequest GetSitResources = HttpRequest.newBuilder()
+    .uri(URI.create("https://<SIT_URL>/applications/" + ApplicationId + "/resources"))
+    .header("Authorization", SIT_TOKEN)
+    .GET()
+    .build();
 
-    private static final String SIT_BASE_URL = "https://sit-pingaccess.example.com/pa-admin-api/v3"; // Adjust
-    private static final String AUTH_TOKEN = "Bearer YOUR_SIT_API_TOKEN";
+HttpResponse<String> SitResourcesResponse = client.send(GetSitResources, HttpResponse.BodyHandlers.ofString());
+JsonNode SitItems = mapper.readTree(SitResourcesResponse.body()).get("items");
 
-    public static void main(String[] args) throws IOException {
-        File folder = new File("dev_exports");
-        File[] files = folder.listFiles((dir, name) -> name.endsWith(".json"));
+// Step 3: Loop through DEV resources
+for (JsonNode devRes : DevItems) {
+    String devResName = devRes.get("name").asText(); // or "path" or another identifier
+    boolean existsInSit = false;
+    int sitResId = -1;
 
-        ObjectMapper mapper = new ObjectMapper();
-
-        if (files != null) {
-            for (File jsonFile : files) {
-                JsonNode jsonNode = mapper.readTree(jsonFile);
-
-                String endpoint = determineEndpointFromFilename(jsonFile.getName());  // E.g. "rules", "applications"
-                String postUrl = SIT_BASE_URL + "/" + endpoint;
-
-                boolean success = postToSIT(postUrl, jsonNode.toString());
-                System.out.println("POST to " + endpoint + " for file " + jsonFile.getName() + ": " + (success ? "Success" : "Failed"));
-            }
+    // Check if it exists in SIT
+    for (JsonNode sitRes : SitItems) {
+        if (sitRes.get("name").asText().equals(devResName)) {
+            existsInSit = true;
+            sitResId = sitRes.get("id").asInt();
+            break;
         }
     }
 
-    private static String determineEndpointFromFilename(String filename) {
-        if (filename.contains("rule")) return "rules";
-        if (filename.contains("application")) return "applications";
-        if (filename.contains("authn")) return "authnRequirements";
-        // Add other types as needed
-        return "unknown";
+    HttpRequest request;
+    if (existsInSit) {
+        // PUT call to update existing SIT resource
+        request = HttpRequest.newBuilder()
+            .uri(URI.create("https://<SIT_URL>/applications/" + ApplicationId + "/resources/" + sitResId))
+            .header("Authorization", SIT_TOKEN)
+            .PUT(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(devRes)))
+            .build();
+    } else {
+        // POST call to create new resource in SIT
+        request = HttpRequest.newBuilder()
+            .uri(URI.create("https://<SIT_URL>/applications/" + ApplicationId + "/resources"))
+            .header("Authorization", SIT_TOKEN)
+            .POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(devRes)))
+            .build();
     }
 
-    private static boolean postToSIT(String targetUrl, String jsonBody) {
-        try {
-            URL url = new URL(targetUrl);
-            HttpURLConnection con = (HttpURLConnection) url.openConnection();
-            con.setRequestMethod("POST");
-            con.setRequestProperty("Authorization", AUTH_TOKEN);
-            con.setRequestProperty("Content-Type", "application/json");
-            con.setDoOutput(true);
-
-            try (OutputStream os = con.getOutputStream()) {
-                os.write(jsonBody.getBytes());
-                os.flush();
-            }
-
-            int responseCode = con.getResponseCode();
-            if (responseCode == HttpURLConnection.HTTP_CREATED || responseCode == HttpURLConnection.HTTP_OK) {
-                return true;
-            } else {
-                System.err.println("Failed POST. Response Code: " + responseCode);
-                try (BufferedReader br = new BufferedReader(new InputStreamReader(con.getErrorStream()))) {
-                    br.lines().forEach(System.err::println);
-                }
-                return false;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        }
+    HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+    if (response.statusCode() == 200 || response.statusCode() == 201) {
+        System.out.println("Resource '" + devResName + "' promoted to SIT successfully.");
+    } else {
+        System.out.println("Failed to promote resource '" + devResName + "' to SIT. Status: " + response.statusCode());
     }
 }
 
