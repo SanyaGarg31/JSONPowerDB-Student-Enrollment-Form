@@ -289,3 +289,65 @@ Highlight critical anomalies directly in the email body for faster visibility.
 Outcome:
 Quick dissemination of important information, enabling timely investigation and resolution of data issues.
 
+
+// Step 1: Get all DEV resources
+HttpRequest GetDevResources = HttpRequest.newBuilder()
+    .uri(URI.create("https://<DEV_URL>/applications/" + DevApplicationId + "/resources"))
+    .header("Authorization", DEV_TOKEN)
+    .GET()
+    .build();
+
+HttpResponse<String> DevResourcesResponse = client.send(GetDevResources, HttpResponse.BodyHandlers.ofString());
+JsonNode DevItems = mapper.readTree(DevResourcesResponse.body()).get("items");
+
+// Step 2: Get all SIT resources
+HttpRequest GetSitResources = HttpRequest.newBuilder()
+    .uri(URI.create("https://<SIT_URL>/applications/" + ApplicationId + "/resources"))
+    .header("Authorization", SIT_TOKEN)
+    .GET()
+    .build();
+
+HttpResponse<String> SitResourcesResponse = client.send(GetSitResources, HttpResponse.BodyHandlers.ofString());
+JsonNode SitItems = mapper.readTree(SitResourcesResponse.body()).get("items");
+
+// Step 3: Loop through DEV resources
+for (JsonNode devRes : DevItems) {
+    String devResName = devRes.get("name").asText(); // or "path" or another identifier
+    boolean existsInSit = false;
+    int sitResId = -1;
+
+    // Check if it exists in SIT
+    for (JsonNode sitRes : SitItems) {
+        if (sitRes.get("name").asText().equals(devResName)) {
+            existsInSit = true;
+            sitResId = sitRes.get("id").asInt();
+            break;
+        }
+    }
+
+    HttpRequest request;
+    if (existsInSit) {
+        // PUT call to update existing SIT resource
+        request = HttpRequest.newBuilder()
+            .uri(URI.create("https://<SIT_URL>/applications/" + ApplicationId + "/resources/" + sitResId))
+            .header("Authorization", SIT_TOKEN)
+            .PUT(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(devRes)))
+            .build();
+    } else {
+        // POST call to create new resource in SIT
+        request = HttpRequest.newBuilder()
+            .uri(URI.create("https://<SIT_URL>/applications/" + ApplicationId + "/resources"))
+            .header("Authorization", SIT_TOKEN)
+            .POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(devRes)))
+            .build();
+    }
+
+    HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+    if (response.statusCode() == 200 || response.statusCode() == 201) {
+        System.out.println("Resource '" + devResName + "' promoted to SIT successfully.");
+    } else {
+        System.out.println("Failed to promote resource '" + devResName + "' to SIT. Status: " + response.statusCode());
+    }
+}
+
+
