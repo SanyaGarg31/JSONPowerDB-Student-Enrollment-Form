@@ -1,3 +1,76 @@
+// Assume: Application (ObjectNode) is already available from DEV Application GET
+boolean isManualOrderingEnabled = Application.get("manualOrderingEnabled").asBoolean();
+
+if (isManualOrderingEnabled) {
+    // 1. Get resourceIds from DEV environment
+    HttpRequest devResOrderRequest = HttpRequest.newBuilder()
+        .uri(URI.create("https://<DEV_API_URL>/pa-admin-api/v3/applications/" + DevApplicationId + "/resourceOrder"))
+        .header("Authorization", DEV_TOKEN)
+        .header("accept", "application/json")
+        .header("X-XSRF-Header", "PingAccess")
+        .GET()
+        .build();
+
+    HttpResponse<String> devResOrderResponse = client.send(devResOrderRequest, HttpResponse.BodyHandlers.ofString());
+    JsonNode devResOrderNode = mapper.readTree(devResOrderResponse.body());
+    ArrayNode devResourceIds = (ArrayNode) devResOrderNode.get("resourceIds");
+
+    // 2. Build a map of resourceName -> SIT_ID
+    Map<String, Integer> sitResourceMap = new HashMap<>();
+
+    HttpRequest sitAllResourcesRequest = HttpRequest.newBuilder()
+        .uri(URI.create("https://<SIT_API_URL>/pa-admin-api/v3/resources"))
+        .header("Authorization", SIT_TOKEN)
+        .header("accept", "application/json")
+        .header("X-XSRF-Header", "PingAccess")
+        .GET()
+        .build();
+
+    HttpResponse<String> sitAllResourcesResponse = client.send(sitAllResourcesRequest, HttpResponse.BodyHandlers.ofString());
+    JsonNode sitResourcesNode = mapper.readTree(sitAllResourcesResponse.body());
+    ArrayNode sitItems = (ArrayNode) sitResourcesNode.get("items");
+
+    for (JsonNode item : sitItems) {
+        String name = item.get("name").asText();
+        int id = item.get("id").asInt();
+        sitResourceMap.put(name, id);
+    }
+
+    // 3. For each dev resource ID, get its name and find SIT ID
+    ArrayNode sitResourceOrderArray = mapper.createArrayNode();
+
+    for (JsonNode devIdNode : devResourceIds) {
+        int devResId = devIdNode.asInt();
+
+        // Get DEV resource details
+        HttpRequest devResourceRequest = HttpRequest.newBuilder()
+            .uri(URI.create("https://<DEV_API_URL>/pa-admin-api/v3/resources/" + devResId))
+            .header("Authorization", DEV_TOKEN)
+            .header("accept", "application/json")
+            .header("X-XSRF-Header", "PingAccess")
+            .GET()
+            .build();
+
+        HttpResponse<String> devResourceResponse = client.send(devResourceRequest, HttpResponse.BodyHandlers.ofString());
+        JsonNode devResource = mapper.readTree(devResourceResponse.body());
+
+        String resourceName = devResource.get("name").asText();
+
+        // Map name to SIT ID
+        Integer sitResId = sitResourceMap.get(resourceName);
+        if (sitResId != null) {
+            sitResourceOrderArray.add(sitResId);
+        } else {
+            System.out.println("Resource name not found in SIT: " + resourceName);
+        }
+    }
+
+    // 4. Set resourceOrder with SIT resource IDs
+    Application.set("resourceOrder", sitResourceOrderArray);
+}
+
+
+
 public class PingAccessAppCreator {
     private static final String PING_ACCESS_BASE_URL = "https://your-pingaccess-url.com/api/v3";
     private static final String AUTH_HEADER = "Bearer your-access-token";
